@@ -20,16 +20,18 @@ Radar Scout é uma ferramenta para vendedores Amazon acompanharem **vendas, lucr
 - **Lucro:** `get_profit_waterfall`.
 - **Repasses:** `get_settlement_summary`.
 - **Repricer:** `get_repricer_summary`, `list_repricer_activity`, `explain_price_change`.
+- **Ads:** `get_ads_overview`, `list_ad_campaigns` — performance de Amazon Ads (investimento, vendas de anúncios, ACoS/ROAS) no total da conta e por campanha, com o estado atual de cada uma.
 - **Conceitos:** `explain_concept` — glossário Radar/Amazon (PMI, MC1–MC3, repasse, floor price, Buy Box %, safe mode).
 
 ## Skills
 
-8 skills do vendedor em `skills/`, cada uma orquestrando os tools `radarscout` e entregando output interpretado em pt-BR:
+9 skills do vendedor em `skills/`, cada uma orquestrando os tools `radarscout` e entregando output interpretado em pt-BR:
 
 - `inicio` — conecta e resolve o `seller_account_id`.
 - `vendas` — panorama de vendas (GMV, ticket, MC3, campeões).
 - `lucro` — cascata financeira (MC1–MC3, CMV, tarifas, anúncios).
 - `repricer` — saúde do repricer e auditoria de mudança de preço.
+- `ads` — performance de Amazon Ads (ACoS/ROAS, gasto por campanha) e premissas de leitura.
 - `repasses` — próximo repasse e conciliação com vendas.
 - `produtos` — busca de catálogo e watchlist de Buy Box.
 - `relatorio` — briefing diário/semanal narrativo.
