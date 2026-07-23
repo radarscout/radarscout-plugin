@@ -3,7 +3,7 @@
   "name": "radarscout",
   "displayName": "Radar Scout",
   "version": "0.1.0",
-  "description": "Converse com seus dados do Radar Scout: vendas, lucro, repasses e repricer da sua operação Amazon.",
+  "description": "Converse com seus dados do Radar Scout: vendas, lucro, repasses, repricer e Amazon Ads da sua operação Amazon.",
   "author": {
     "name": "Radar Scout",
     "email": "suporte@radarscout.com.br",
@@ -12,5 +12,5 @@
   "homepage": "https://radarscout.com.br",
   "repository": "https://github.com/eliteamz/radarscout-plugin",
   "license": "MIT",
-  "keywords": ["amazon", "seller", "analytics", "repricer", "vendas", "lucro", "repasses"]
+  "keywords": ["amazon", "seller", "analytics", "repricer", "vendas", "lucro", "repasses", "ads", "ppc"]
 }

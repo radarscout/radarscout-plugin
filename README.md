@@ -1,13 +1,13 @@
 # Radar Scout — Plugin (MCP + Skills)
 
-Converse com seus dados do Radar Scout — **vendas, lucro (MC1–MC3), repasses e repricer** da sua operação Amazon — direto no seu agente de código.
+Converse com seus dados do Radar Scout — **vendas, lucro (MC1–MC3), repasses, repricer e Amazon Ads** da sua operação Amazon — direto no seu agente de código.
 
-> **Status:** v0.1.0 — MCP remoto + 8 skills do vendedor.
+> **Status:** v0.1.0 — MCP remoto + 9 skills do vendedor.
 
 ## O que vem aqui
 
-- **MCP `radarscout`** — servidor remoto read-only (HTTP + OAuth) com 12 tools: `whoami`, busca/detalhe de produtos, panorama de vendas, profit waterfall, repasses, repricer e glossário.
-- **Skills** — 8 fluxos do dia a dia do vendedor, que orquestram os tools e entregam output interpretado em pt-BR:
+- **MCP `radarscout`** — servidor remoto read-only (HTTP + OAuth) com 14 tools: `whoami`, busca/detalhe de produtos, panorama de vendas, profit waterfall, repasses, repricer, Amazon Ads e glossário.
+- **Skills** — 9 fluxos do dia a dia do vendedor, que orquestram os tools e entregam output interpretado em pt-BR:
 
 | Skill | Para quê |
 | --- | --- |
@@ -15,6 +15,7 @@ Converse com seus dados do Radar Scout — **vendas, lucro (MC1–MC3), repasses
 | `radarscout:vendas` | Panorama de vendas (GMV, ticket, MC3, campeões) |
 | `radarscout:lucro` | Cascata financeira (MC1–MC3, CMV, tarifas, anúncios) |
 | `radarscout:repricer` | Saúde do repricer e "por que o preço mudou" |
+| `radarscout:ads` | Performance de Amazon Ads (ACoS/ROAS, gasto por campanha) |
 | `radarscout:repasses` | Quando e quanto a Amazon vai repassar |
 | `radarscout:produtos` | Busca de catálogo e watchlist de Buy Box |
 | `radarscout:relatorio` | Briefing diário/semanal do negócio |
@@ -60,7 +61,7 @@ Connectors adicionados no claude.ai aparecem automaticamente no Claude Code.
 
 ### Skills em qualquer agente — skills.sh (`npx skills`)
 
-As 8 skills são instaláveis em 70+ agentes (Claude Code, Cursor, Copilot, Windsurf, Gemini, Codex…) via [skills.sh](https://www.skills.sh):
+As 9 skills são instaláveis em 70+ agentes (Claude Code, Cursor, Copilot, Windsurf, Gemini, Codex…) via [skills.sh](https://www.skills.sh):
 
 ```bash
 # todas as skills do repo
