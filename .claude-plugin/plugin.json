@@ -10,7 +10,7 @@
     "url": "https://radarscout.com.br"
   },
   "homepage": "https://radarscout.com.br",
-  "repository": "https://github.com/eliteamz/radarscout-plugin",
+  "repository": "https://github.com/radarscout/radarscout-plugin",
   "license": "MIT",
   "keywords": ["amazon", "seller", "analytics", "repricer", "vendas", "lucro", "repasses", "ads", "ppc"]
 }

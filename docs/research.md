@@ -171,7 +171,7 @@ Fluxo MCP: 401 → **Protected Resource Metadata (RFC 9728)** em `/.well-known/o
 
 ## 6. Blueprint do novo repositório
 
-Sugestão: repo público `eliteamz/radar-scout-plugin` (ou `radar-scout-skills`), licença MIT/Apache-2.0, espelhando o layout do `mongodb/agent-skills` (verificado).
+Sugestão: repo público `radarscout/radar-scout-plugin` (ou `radar-scout-skills`), licença MIT/Apache-2.0, espelhando o layout do `mongodb/agent-skills` (verificado).
 
 ```
 radar-scout-plugin/
@@ -227,7 +227,7 @@ radar-scout-plugin/
   "description": "Converse com seus dados do Radar Scout: vendas, lucro, repasses e repricer da sua operação Amazon.",
   "author": { "name": "Radar Scout", "url": "https://radarscout.com.br" },
   "homepage": "https://radarscout.com.br",
-  "repository": "https://github.com/eliteamz/radar-scout-plugin",
+  "repository": "https://github.com/radarscout/radar-scout-plugin",
   "license": "MIT",
   "keywords": ["amazon", "seller", "analytics", "repricer", "vendas", "lucro", "repasses"]
 }
@@ -250,7 +250,7 @@ radar-scout-plugin/
 ### 6.4 Snippets de instalação para o README (por harness)
 ```bash
 # Claude Code — marketplace + plugin (traz MCP + skills de uma vez)
-/plugin marketplace add eliteamz/radar-scout-plugin
+/plugin marketplace add radarscout/radar-scout-plugin
 /plugin install radar-scout@radar-scout
 # … ou só o MCP:
 claude mcp add --transport http radarscout https://mcp.radarscout.com.br/mcp
@@ -320,7 +320,7 @@ Cada `SKILL.md` deve: manter corpo <500 linhas; referir tools pela capacidade + 
 ---
 
 ## 10. Próximos passos sugeridos
-1. **Criar o repo** `eliteamz/radar-scout-plugin` com o layout da §6 (posso scaffoldar).
+1. **Criar o repo** `radarscout/radar-scout-plugin` com o layout da §6 (posso scaffoldar).
 2. **Escrever as skills** da §8 com `skill-creator` (uma a uma, com avaliações), iterando contra o MCP real (`Radar_Scout` já está conectado nesta sessão para testes ponta a ponta).
 3. **Preparar a distribuição do MCP:** validar CIMD/DCR + alcance público (§7), publicar no MCP Registry e submeter ao Anthropic Connector Directory.
 4. **README com badges/deeplinks** por harness (§6.4) e `AGENTS.md` (§3.5).

@@ -26,7 +26,7 @@ Converse com seus dados do Radar Scout — **vendas, lucro (MC1–MC3), repasses
 ### Claude Code (plugin = MCP + skills de uma vez)
 
 ```bash
-/plugin marketplace add eliteamz/radarscout-plugin
+/plugin marketplace add radarscout/radarscout-plugin
 /plugin install radarscout@radarscout
 ```
 
@@ -65,13 +65,13 @@ As 9 skills são instaláveis em 70+ agentes (Claude Code, Cursor, Copilot, Wind
 
 ```bash
 # todas as skills do repo
-npx skills add eliteamz/radarscout-plugin
+npx skills add radarscout/radarscout-plugin
 
 # só algumas, num agente específico, sem prompt interativo
-npx skills add eliteamz/radarscout-plugin --skill vendas --skill lucro -a claude-code -y
+npx skills add radarscout/radarscout-plugin --skill vendas --skill lucro -a claude-code -y
 
 # experimentar uma sem instalar
-npx skills use eliteamz/radarscout-plugin@relatorio | claude
+npx skills use radarscout/radarscout-plugin@relatorio | claude
 ```
 
 > ⚠️ **`npx skills` instala só as skills** (os `SKILL.md` de `skills/`). O **MCP `radarscout` é configurado à parte** (seções acima, por harness) — sem ele conectado, as skills não têm de onde ler os dados.
