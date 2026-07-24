@@ -1,6 +1,6 @@
 ---
 name: ads
-description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta e por campanha, com o estado atual de cada uma. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, ou quiser revisar o desempenho das campanhas."
+description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta, por campanha (com o estado atual de cada uma) e por termo de busca. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, quais termos de busca dispararam os anúncios (e quais gastam sem converter), ou quiser revisar o desempenho das campanhas."
 ---
 
 # Performance de Amazon Ads
@@ -19,7 +19,8 @@ Esta skill dá **premissas de leitura**, não uma estratégia de campanha. Estru
 
 1. Chame `get_ads_overview` do `radarscout` com a janela: investimento, vendas de anúncios, impressões, cliques, pedidos e os derivados **ACoS, ROAS, CTR, CVR, CPC**. Cobre **todas** as campanhas que gastaram no período — inclusive as pausadas ou arquivadas depois.
 2. Chame `list_ad_campaigns` para a mesma leitura **por campanha**, cada uma com o **estado atual**. Por padrão traz `ENABLED` + `PAUSED`; `ARCHIVED` só se pedirem explicitamente.
-3. Para julgar **lucratividade** (e não só ACoS), veja as premissas abaixo.
+3. Para descer ao **termo de busca** — o que o cliente realmente digitou —, chame `list_search_terms` (opcionalmente filtrando por campanha). Veja a seção **Termos de busca**.
+4. Para julgar **lucratividade** (e não só ACoS), veja as premissas abaixo.
 
 ## Premissas de leitura
 
@@ -41,6 +42,23 @@ Cada campanha vem com seu estado, e nenhuma é escondida. Uma `PAUSED` com gasto
 
 Se `state_filter_applied` vier `false`, a lista veio **sem** o filtro de estado — ou a consulta de estado falhou, ou a conta não tem Ads conectado (a nota diz qual). Nesse caso trate os estados como desconhecidos e diga isso.
 
+## Termos de busca
+
+`list_search_terms` mostra os **termos que o cliente realmente buscou** e que acionaram os anúncios, cada um com o **alvo que o capturou** e o **tipo** desse alvo (`keyword_type`) — que é a primeira coisa a ler:
+
+- **`BROAD` / `PHRASE` / `EXACT`** — o termo veio de uma **palavra-chave que o vendedor cadastrou**.
+- **`TARGETING_EXPRESSION` / `TARGETING_EXPRESSION_PREDEFINED`** — veio de **segmentação automática ou por produto** (a Amazon escolheu onde mostrar).
+
+A distinção muda a conclusão: um termo que converte sob **segmentação automática** é candidato natural a **virar palavra-chave própria**; o mesmo termo já sob uma **keyword exata** não é — já está cadastrado. **Leia o `keyword_type` antes de decidir qualquer coisa** sobre o termo.
+
+Três premissas ao ler termos:
+
+- **Atribuição vale aqui também.** O termo só ganha significado com o período somado, e os ~3 dias recentes vêm imaturos. Nunca conclua "esse termo não converte" — muito menos o negative — olhando poucos dias.
+- **Fee-aware, não ACoS.** Um termo "lucrativo" pelo ACoS pode não ser depois da tarifa da Amazon. Antes de chamar um termo de bom, desça ao produto (`get_product_details` + `calculate_fees`, ou `get_profit_waterfall` se houver custo configurado).
+- **Volume antes de veredito.** Termo com cliques e **sem** venda não é automaticamente desperdício: veja se houve **cliques suficientes** para concluir. Poucos cliques são ruído, não sinal.
+
+Os filtros da tool (`min_clicks`, `min_cost`, `has_sales`, `keyword_types`) são **primitivas de consulta neutras** — recortam a leitura, não são um limiar de decisão. O que fazer com um termo (negativar, colher para keyword, subir lance) é **estratégia do vendedor**, não da skill.
+
 ## O que entregar
 
 - Veredito do período: investimento, retorno e ACoS/ROAS, com a **janela explícita** e a ressalva dos dias recentes.
@@ -57,6 +75,7 @@ Se `state_filter_applied` vier `false`, a lista veio **sem** o filtro de estado 
 
 - **Não trate ACoS como lucro.** Sem tarifa (e sem custo) não dá para dizer se a campanha ganha dinheiro.
 - **Não conclua "caiu" olhando os últimos dias** — pode ser só atribuição imatura.
+- **Não negative um termo em cima de janela imatura nem de poucos cliques** — e cheque o `keyword_type` antes (colher faz sentido no automático, não numa keyword já exata).
 - Campanha **sem entrega** (`ENABLED` com tudo zerado) não é erro de dado: normalmente é lance ou orçamento insuficiente.
 - **Somente leitura.** Estas tools não criam campanha, não pausam e não alteram lances — se pedirem execução, diga que a ação ainda é feita no console da Amazon.
 - **Sem dados no período:** verifique se o Amazon Ads está conectado e se a importação já rodou (a nota da tool indica qual é o caso).
