@@ -59,6 +59,16 @@ Três premissas ao ler termos:
 
 Os filtros da tool (`min_clicks`, `min_cost`, `has_sales`, `keyword_types`) são **primitivas de consulta neutras** — recortam a leitura, não são um limiar de decisão. O que fazer com um termo (negativar, colher para keyword, subir lance) é **estratégia do vendedor**, não da skill.
 
+## Veiculação zero: campanha ENABLED sem impressões
+
+Uma campanha `ENABLED` com investimento e impressões zerados não é "sem dados" — é um veredito que precisa de diagnóstico, na ordem certa. **Nunca assuma a causa** antes de checar os sinais abaixo, nessa ordem:
+
+1. **Primeiro, `data_freshness`.** Antes de julgar a campanha, cheque se os dados chegaram: `get_ads_overview` traz `data_freshness` (`last_ingested_at`, `latest_window_end`, `latest_window_records`) e `freshness_note`. Importação parada ou ausente é conversa de **pipeline**, não de campanha; importação recente com zero linhas confirma que a campanha realmente não veiculou.
+2. **Depois, o `serving_status` da campanha.** `list_ad_campaigns` devolve o veredito da Amazon no nível da campanha (ex.: orçamento esgotado, falha de pagamento, início pendente). Um status desses já explica o silêncio sem precisar olhar os anúncios.
+3. **Depois, `ad_serving_summary.serving_status_counts` por anúncio.** Para campanhas `ENABLED` com zero impressões, a tool também devolve a contagem de status por anúncio — é aqui que aparecem problemas de estoque e elegibilidade. Status diferentes levam a conversas diferentes: sem estoque é reposição, orçamento é dimensionamento, suspensão é política — e nenhum desses é ajuste de Ads.
+4. **Todos os status saudáveis e zero exibições.** Se os anúncios estão todos elegíveis mas ainda assim não exibiram, o problema é **competitividade de lance/segmentação** — estão perdendo todos os leilões. Nenhum status vai apontar isso; não force uma causa "com cara de status" quando na verdade é disputa de leilão.
+5. **`ENABLED` ≠ elegível.** O estado da campanha é a intenção do vendedor; o `serving_status` (campanha ou anúncio) é o veredito da Amazon — os dois podem divergir. Se `ad_serving_summary.truncated` vier `true`, as contagens são um **piso**, não o total (a lista de anúncios foi cortada). Ao conversar com o vendedor, use linguagem simples — "status de veiculação", "não exibiu anúncios" — nunca o jargão bruto da API.
+
 ## O que entregar
 
 - Veredito do período: investimento, retorno e ACoS/ROAS, com a **janela explícita** e a ressalva dos dias recentes.
@@ -76,6 +86,6 @@ Os filtros da tool (`min_clicks`, `min_cost`, `has_sales`, `keyword_types`) são
 - **Não trate ACoS como lucro.** Sem tarifa (e sem custo) não dá para dizer se a campanha ganha dinheiro.
 - **Não conclua "caiu" olhando os últimos dias** — pode ser só atribuição imatura.
 - **Não negative um termo em cima de janela imatura nem de poucos cliques** — e cheque o `keyword_type` antes (colher faz sentido no automático, não numa keyword já exata).
-- Campanha **sem entrega** (`ENABLED` com tudo zerado) não é erro de dado: normalmente é lance ou orçamento insuficiente.
+- Campanha **sem entrega** (`ENABLED` com tudo zerado) não é erro de dado nem tem causa única presumida — siga a ordem de diagnóstico em **Veiculação zero** (`data_freshness` → `serving_status` da campanha → `serving_status_counts` dos anúncios → competitividade de lance/segmentação).
 - **Somente leitura.** Estas tools não criam campanha, não pausam e não alteram lances — se pedirem execução, diga que a ação ainda é feita no console da Amazon.
 - **Sem dados no período:** verifique se o Amazon Ads está conectado e se a importação já rodou (a nota da tool indica qual é o caso).
