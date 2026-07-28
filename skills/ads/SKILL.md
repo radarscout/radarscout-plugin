@@ -75,11 +75,13 @@ Além da leitura, existem tools de **alteração**: pausar/reativar campanha (`p
 
 1. **Simule primeiro, sempre.** Toda tool de alteração aceita `execute: false` (o padrão): monta o pedido e valida sem mudar nada na Amazon. Mostre ao vendedor o que mudaria e obtenha **confirmação explícita** antes de repetir com `execute: true`.
 2. **Valores absolutos, nunca delta.** As tools recebem o valor final (`bid: 1.20`), não "aumente 10%". Ao ouvir um pedido relativo, calcule sobre o valor atual — o orçamento atual vem em `daily_budget` no `list_ad_campaigns`; para lance atual de keyword/target ainda não há leitura direta (uma simulação rejeitada por variação revela o valor em `previous`).
-3. **Rejeição é conversa, não erro.** `rejected_hard_limit` → a resposta traz `allowedRange`; proponha um valor dentro da faixa. `rejected_cooldown` → existe um período de espera entre alterações na mesma campanha/keyword (`daysRemaining` diz quanto falta). `rejected_rate_limit` → limite diário de segurança de alterações da conta. Explique o motivo em linguagem simples e **nunca tente contornar por conta própria**.
+3. **Rejeição é conversa, não erro.** `rejected_hard_limit` → a resposta traz `allowedRange`; proponha um valor dentro da faixa. `rejected_cooldown` → existe um período de espera entre alterações na mesma campanha/keyword (`daysRemaining` diz quanto falta). `rejected_rate_limit` → limite diário de segurança de alterações da conta. Explique o motivo em linguagem simples e **nunca tente contornar por conta própria**. Para explicar as proteções ao vendedor, chame `explain_concept` com o termo `limites de alteração` — não improvise a taxonomia.
 4. **Forçar é decisão do vendedor, nunca sua.** As flags `override_cooldown`/`override_rate_limit` só entram depois de uma rejeição, com o motivo explicado e a confirmação explícita do vendedor.
 5. **Propostas do motor de automação** (`list_ads_proposals` → revisar → `approve_ads_proposal`/`reject_ads_proposal`): proposta com mais de ~24h pode não refletir o estado atual — confira antes de aprovar. Status `unknown` = desfecho não confirmado pelo sistema; investigue (via `auditId`) antes de tratar como feito. Ao rejeitar, registre o motivo em `reason`.
 6. **Rastro.** Toda tentativa de alteração (inclusive simulação e rejeição) gera um `auditId` — cite-o ao reportar o que foi feito.
 7. **Linguagem com o vendedor:** "simulação", "período de espera", "faixa permitida", "limite diário" — nunca o jargão bruto da API (dry-run, cooldown, rate limit).
+
+O glossário de Ajuda também explica `ACoS`, `ROAS`, `negativar`, `status de veiculação`, `proposta de automação` e `simulação` — use-o em vez de definir de memória.
 
 ## O que entregar
 
