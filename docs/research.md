@@ -273,6 +273,8 @@ claude mcp add --transport http radarscout https://mcp.radarscout.com.br/mcp
 
 ## 7. Prontidão do `apps/mcp` atual para distribuição
 
+> **Snapshot de pesquisa (2026-06).** O MCP evoluiu desde então: são **31 tools**, e as de Amazon Ads **escrevem** na conta do vendedor (simulação por padrão + confirmação). O inventário atual vive em `AGENTS.md`.
+
 Já implementado (favorável):
 - `/.well-known/oauth-protected-resource` (RFC 9728) e `/.well-known/oauth-authorization-server` — descoberta OK.
 - Streamable HTTP em `/mcp`, read-only, seller-scoped, audience binding (RFC 8707), scope `radar:read`.

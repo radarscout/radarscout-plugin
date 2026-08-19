@@ -8,7 +8,7 @@ description: "Localiza produtos e entrega detalhes do catálogo Amazon (preço, 
 Cobre três coisas distintas — não as confunda:
 - **Catálogo Amazon** (entidade Product, por ASIN): busca e detalhe.
 - **Produtos rastreados** (watchlist de Monitorar Buy Box do usuário).
-- (Os *anúncios* do seller — SellerListing — são outra entidade; estas tools tratam do **catálogo** e da **watchlist**, não dos seus anúncios de venda.)
+- (Os *anúncios* do seller — SellerListing — são outra entidade, com estoque e reposição: skill `ofertas`. Estas tools tratam do **catálogo** e da **watchlist**, não dos seus anúncios de venda.)
 
 ## Conta
 
@@ -22,6 +22,9 @@ Cobre três coisas distintas — não as confunda:
 
 ### Revisar a watchlist de Buy Box
 3. Tool de produtos rastreados (`list_tracked_products`) do `radarscout` — lista a watchlist com **preço atual**, **variação recente** de preço e a flag de notificação. Use `response_format=detailed` para o histórico recente. Pagina por cursor.
+
+### Avaliar se vale a pena
+4. Para simular lucro, margem e ROI de um preço, ou estimar vendas mensais pelo BSR, passe para a skill `calculadora` (`calculate_fees`, `estimate_sales_from_bsr`) — alimentada com o preço, a categoria e o BSR que o detalhe já trouxe.
 
 ## O que entregar
 
@@ -37,7 +40,7 @@ Cobre três coisas distintas — não as confunda:
 
 ## Cuidados
 
-- **Catálogo ≠ seus anúncios.** Deixe claro que busca/detalhe são do catálogo Amazon, não das suas vendas.
+- **Catálogo ≠ seus anúncios.** Deixe claro que busca/detalhe são do catálogo Amazon, não das suas vendas. Se o usuário quis dizer os SKUs dele (estoque, reposição), a skill é `ofertas`.
 - **Rastreado ≠ favorito** — são entidades diferentes.
 - **Título nulo** num produto rastreado: identifique pelo **ASIN** em vez de omitir o item.
 - Não varra todas as páginas de cursor sem o usuário pedir; mostre a primeira e ofereça mais.

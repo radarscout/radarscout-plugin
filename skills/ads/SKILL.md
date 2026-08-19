@@ -1,6 +1,6 @@
 ---
 name: ads
-description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta, por campanha (com o estado atual de cada uma) e por termo de busca. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, quais termos de busca dispararam os anúncios (e quais gastam sem converter), ou quiser revisar o desempenho das campanhas."
+description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta, por campanha (com o estado atual de cada uma), por termo de busca e por lance atual de palavra-chave/alvo. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, quais termos de busca dispararam os anúncios (e quais gastam sem converter), ou quanto está pagando por clique em cada palavra-chave."
 ---
 
 # Performance de Amazon Ads
@@ -20,7 +20,10 @@ Esta skill dá **premissas de leitura**, não uma estratégia de campanha. Estru
 1. Chame `get_ads_overview` do `radarscout` com a janela: investimento, vendas de anúncios, impressões, cliques, pedidos e os derivados **ACoS, ROAS, CTR, CVR, CPC**. Cobre **todas** as campanhas que gastaram no período — inclusive as pausadas ou arquivadas depois.
 2. Chame `list_ad_campaigns` para a mesma leitura **por campanha**, cada uma com o **estado atual**. Por padrão traz `ENABLED` + `PAUSED`; `ARCHIVED` só se pedirem explicitamente.
 3. Para descer ao **termo de busca** — o que o cliente realmente digitou —, chame `list_search_terms` (opcionalmente filtrando por campanha). Veja a seção **Termos de busca**.
-4. Para julgar **lucratividade** (e não só ACoS), veja as premissas abaixo.
+4. Para ver **quanto se está pagando** em cada palavra-chave ou alvo, chame `list_ad_bids`. Veja a seção **Lances atuais**.
+5. Para julgar **lucratividade** (e não só ACoS), veja as premissas abaixo.
+
+Quando o vendedor decidir **agir** (pausar, mudar lance ou orçamento, negativar), passe para a skill `acoes-ads` — as ferramentas de execução estão lá, com simulação e confirmação obrigatórias.
 
 ## Premissas de leitura
 
@@ -59,6 +62,17 @@ Três premissas ao ler termos:
 
 Os filtros da tool (`min_clicks`, `min_cost`, `has_sales`, `keyword_types`) são **primitivas de consulta neutras** — recortam a leitura, não são um limiar de decisão. O que fazer com um termo (negativar, colher para keyword, subir lance) é **estratégia do vendedor**, não da skill.
 
+## Lances atuais
+
+`list_ad_bids` lista palavras-chave e alvos de produto/categoria com o **lance que a Amazon usa nos leilões agora**. Em conta grande, filtre por `campaign_id` (ou `ad_group_id`); `type` recorta entre `keyword`, `target` ou ambos.
+
+O campo decisivo é o **`bid_source`**:
+
+- **`próprio`** — o item tem lance definido nele mesmo.
+- **`padrão do grupo`** — o item **não tem lance próprio** e está herdando o padrão do grupo de anúncios. Mudar o lance desse item cria um lance próprio e o desliga do padrão do grupo — e mexer no padrão do grupo mudaria **todos** os itens que ainda herdam. Diga qual dos dois o vendedor quer antes de propor um número.
+
+Os ids que vêm aqui (`keyword_id` / `target_id`) são exatamente os que as ferramentas de mudança de lance recebem — leia daqui, nunca invente.
+
 ## O que entregar
 
 - Veredito do período: investimento, retorno e ACoS/ROAS, com a **janela explícita** e a ressalva dos dias recentes.
@@ -77,5 +91,5 @@ Os filtros da tool (`min_clicks`, `min_cost`, `has_sales`, `keyword_types`) são
 - **Não conclua "caiu" olhando os últimos dias** — pode ser só atribuição imatura.
 - **Não negative um termo em cima de janela imatura nem de poucos cliques** — e cheque o `keyword_type` antes (colher faz sentido no automático, não numa keyword já exata).
 - Campanha **sem entrega** (`ENABLED` com tudo zerado) não é erro de dado: normalmente é lance ou orçamento insuficiente.
-- **Somente leitura.** Estas tools não criam campanha, não pausam e não alteram lances — se pedirem execução, diga que a ação ainda é feita no console da Amazon.
+- **Esta skill é de leitura.** Ela não pausa campanha, não muda lance nem orçamento — quem executa é a skill `acoes-ads`, sempre com simulação e confirmação do vendedor antes.
 - **Sem dados no período:** verifique se o Amazon Ads está conectado e se a importação já rodou (a nota da tool indica qual é o caso).

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "radarscout",
-  "description": "Catálogo oficial do Radar Scout — converse com seus dados de vendas, lucro e repricer da Amazon.",
+  "description": "Catálogo oficial do Radar Scout — converse com seus dados de vendas, lucro, repricer e Amazon Ads da Amazon.",
   "owner": {
     "name": "Radar Scout",
     "email": "suporte@radarscout.com.br"
@@ -10,9 +10,18 @@
     {
       "name": "radarscout",
       "source": ".",
-      "description": "Skills + MCP para analisar vendas, lucro (MC1–MC3), repasses e repricer do Radar Scout.",
+      "description": "Skills + MCP para analisar vendas, lucro (MC1–MC3), repasses, repricer, ofertas e Amazon Ads do Radar Scout — e agir nos anúncios com confirmação.",
       "category": "analytics",
-      "tags": ["amazon", "seller", "vendas", "lucro", "repricer", "repasses"]
+      "tags": [
+        "amazon",
+        "seller",
+        "vendas",
+        "lucro",
+        "repricer",
+        "repasses",
+        "ads",
+        "estoque"
+      ]
     }
   ]
 }
