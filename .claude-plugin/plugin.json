@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "radarscout",
   "displayName": "Radar Scout",
-  "version": "0.1.0",
-  "description": "Converse com seus dados do Radar Scout: vendas, lucro, repasses, repricer e Amazon Ads da sua operação Amazon.",
+  "version": "0.2.0",
+  "description": "Converse com seus dados do Radar Scout — vendas, lucro, repasses, repricer e Amazon Ads — e execute mudanças em Ads com simulação e confirmação.",
   "author": {
     "name": "Radar Scout",
     "email": "suporte@radarscout.com.br",
@@ -12,5 +12,17 @@
   "homepage": "https://radarscout.com.br",
   "repository": "https://github.com/radarscout/radarscout-plugin",
   "license": "MIT",
-  "keywords": ["amazon", "seller", "analytics", "repricer", "vendas", "lucro", "repasses", "ads", "ppc"]
+  "keywords": [
+    "amazon",
+    "seller",
+    "analytics",
+    "repricer",
+    "vendas",
+    "lucro",
+    "repasses",
+    "ads",
+    "ppc",
+    "estoque",
+    "buybox"
+  ]
 }

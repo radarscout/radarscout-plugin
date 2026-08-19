@@ -1,6 +1,6 @@
 ---
 name: ads
-description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta, por campanha (com o estado atual de cada uma) e por termo de busca — e executa alterações com confirmação: pausar/reativar campanha, ajustar lance e orçamento, negativar termos, e revisar/aprovar propostas do motor de automação. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, quais termos dispararam os anúncios, quiser revisar o desempenho — ou pedir para pausar, mudar lance/orçamento, negativar um termo ou revisar propostas de automação."
+description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta, por campanha (com o estado atual de cada uma), por termo de busca e por lance atual de palavra-chave/alvo — e executa alterações com confirmação: pausar/reativar campanha, ajustar lance e orçamento, negativar termos, e revisar/aprovar propostas do motor de automação. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, quais termos de busca dispararam os anúncios (e quais gastam sem converter), quanto está pagando por clique em cada palavra-chave, ou pedir para pausar, mudar lance/orçamento, negativar um termo ou revisar propostas de automação."
 ---
 
 # Performance de Amazon Ads
@@ -20,7 +20,10 @@ Esta skill dá **premissas de leitura e de execução**, não uma estratégia de
 1. Chame `get_ads_overview` do `radarscout` com a janela: investimento, vendas de anúncios, impressões, cliques, pedidos e os derivados **ACoS, ROAS, CTR, CVR, CPC**. Cobre **todas** as campanhas que gastaram no período — inclusive as pausadas ou arquivadas depois.
 2. Chame `list_ad_campaigns` para a mesma leitura **por campanha**, cada uma com o **estado atual**. Por padrão traz `ENABLED` + `PAUSED`; `ARCHIVED` só se pedirem explicitamente.
 3. Para descer ao **termo de busca** — o que o cliente realmente digitou —, chame `list_search_terms` (opcionalmente filtrando por campanha). Veja a seção **Termos de busca**.
-4. Para julgar **lucratividade** (e não só ACoS), veja as premissas abaixo.
+4. Para ver **quanto se está pagando** em cada palavra-chave ou alvo, chame `list_ad_bids`. Veja a seção **Lances atuais**.
+5. Para julgar **lucratividade** (e não só ACoS), veja as premissas abaixo.
+
+Quando o vendedor decidir **agir** (pausar, mudar lance ou orçamento, negativar), use as ferramentas de execução descritas em **Alterações na conta** — sempre com simulação e confirmação obrigatórias. Para uma skill dedicada exclusivamente a ações, veja `acoes-ads`.
 
 ## Premissas de leitura
 
@@ -71,15 +74,14 @@ Uma campanha `ENABLED` com investimento e impressões zerados não é "sem dados
 
 ## Lances atuais
 
-Perguntas como "qual meu lance?", "quanto estou pagando por clique nessa
-palavra?", "que lance esse alvo usa?" → `list_ad_bids`. A resposta traz o
-lance efetivo de cada palavra-chave e alvo: quando o item não tem lance
-próprio, o valor vem resolvido do padrão do grupo de anúncios e `bid_source`
-indica a origem. Antes de propor mudança de lance, leia o lance atual aqui —
-os ids retornados (`keyword_id`/`target_id`) são os mesmos que
-`update_keyword_bid`/`update_target_bid` recebem, e a mudança usa valor
-absoluto (o novo lance, não a diferença). Em contas grandes, filtre por
-`campaign_id`.
+`list_ad_bids` lista palavras-chave e alvos de produto/categoria com o **lance que a Amazon usa nos leilões agora**. Em conta grande, filtre por `campaign_id` (ou `ad_group_id`); `type` recorta entre `keyword`, `target` ou ambos.
+
+O campo decisivo é o **`bid_source`**:
+
+- **`próprio`** — o item tem lance definido nele mesmo.
+- **`padrão do grupo`** — o item **não tem lance próprio** e está herdando o padrão do grupo de anúncios. Mudar o lance desse item cria um lance próprio e o desliga do padrão do grupo — e mexer no padrão do grupo mudaria **todos** os itens que ainda herdam. Diga qual dos dois o vendedor quer antes de propor um número.
+
+Os ids que vêm aqui (`keyword_id` / `target_id`) são exatamente os que as ferramentas de mudança de lance recebem — leia daqui, nunca invente.
 
 ## Alterações na conta (write tools)
 
