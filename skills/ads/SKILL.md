@@ -1,13 +1,13 @@
 ---
 name: ads
-description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta, por campanha (com o estado atual de cada uma), por termo de busca e por lance atual de palavra-chave/alvo. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, quais termos de busca dispararam os anúncios (e quais gastam sem converter), ou quanto está pagando por clique em cada palavra-chave."
+description: "Analisa a performance de Amazon Ads de uma conta de seller — investimento, vendas de anúncios, ACoS/ROAS, cliques e conversão, no total da conta, por campanha (com o estado atual de cada uma), por termo de busca e por lance atual de palavra-chave/alvo — e executa alterações com confirmação: pausar/reativar campanha, ajustar lance e orçamento, negativar termos, e revisar/aprovar propostas do motor de automação. Use quando o usuário perguntar como estão os anúncios, quanto gastou em Ads, qual o ACoS, quais campanhas gastam sem vender, quais termos de busca dispararam os anúncios (e quais gastam sem converter), quanto está pagando por clique em cada palavra-chave, ou pedir para pausar, mudar lance/orçamento, negativar um termo ou revisar propostas de automação."
 ---
 
 # Performance de Amazon Ads
 
-Responde duas perguntas: **"quanto investi e o que voltou?"** (conta) e **"quais campanhas puxam e quais queimam?"** (por campanha).
+Responde duas perguntas: **"quanto investi e o que voltou?"** (conta) e **"quais campanhas puxam e quais queimam?"** (por campanha) — e, quando o vendedor decidir agir, executa a alteração com segurança (ver **Alterações na conta**).
 
-Esta skill dá **premissas de leitura**, não uma estratégia de campanha. Estruturas e táticas variam por operação — pergunte a do vendedor em vez de assumir uma.
+Esta skill dá **premissas de leitura e de execução**, não uma estratégia de campanha. Estruturas e táticas variam por operação — pergunte a do vendedor em vez de assumir uma.
 
 ## Conta e período
 
@@ -23,7 +23,7 @@ Esta skill dá **premissas de leitura**, não uma estratégia de campanha. Estru
 4. Para ver **quanto se está pagando** em cada palavra-chave ou alvo, chame `list_ad_bids`. Veja a seção **Lances atuais**.
 5. Para julgar **lucratividade** (e não só ACoS), veja as premissas abaixo.
 
-Quando o vendedor decidir **agir** (pausar, mudar lance ou orçamento, negativar), passe para a skill `acoes-ads` — as ferramentas de execução estão lá, com simulação e confirmação obrigatórias.
+Quando o vendedor decidir **agir** (pausar, mudar lance ou orçamento, negativar), use as ferramentas de execução descritas em **Alterações na conta** — sempre com simulação e confirmação obrigatórias. Para uma skill dedicada exclusivamente a ações, veja `acoes-ads`.
 
 ## Premissas de leitura
 
@@ -62,6 +62,16 @@ Três premissas ao ler termos:
 
 Os filtros da tool (`min_clicks`, `min_cost`, `has_sales`, `keyword_types`) são **primitivas de consulta neutras** — recortam a leitura, não são um limiar de decisão. O que fazer com um termo (negativar, colher para keyword, subir lance) é **estratégia do vendedor**, não da skill.
 
+## Veiculação zero: campanha ENABLED sem impressões
+
+Uma campanha `ENABLED` com investimento e impressões zerados não é "sem dados" — é um veredito que precisa de diagnóstico, na ordem certa. **Nunca assuma a causa** antes de checar os sinais abaixo, nessa ordem:
+
+1. **Primeiro, `data_freshness`.** Antes de julgar a campanha, cheque se os dados chegaram: `get_ads_overview` traz `data_freshness` (`last_ingested_at`, `latest_window_end`, `latest_window_records`) e `freshness_note`. Importação parada ou ausente é conversa de **pipeline**, não de campanha; importação recente com zero linhas confirma que a campanha realmente não veiculou.
+2. **Depois, o `serving_status` da campanha.** `list_ad_campaigns` devolve o veredito da Amazon no nível da campanha (ex.: orçamento esgotado, falha de pagamento, início pendente). Um status desses já explica o silêncio sem precisar olhar os anúncios.
+3. **Depois, `ad_serving_summary.serving_status_counts` por anúncio.** Para campanhas `ENABLED` com zero impressões, a tool também devolve a contagem de status por anúncio — é aqui que aparecem problemas de estoque e elegibilidade. Status diferentes levam a conversas diferentes: sem estoque é reposição, orçamento é dimensionamento, suspensão é política — e nenhum desses é ajuste de Ads.
+4. **Todos os status saudáveis e zero exibições.** Se os anúncios estão todos elegíveis mas ainda assim não exibiram, o problema é **competitividade de lance/segmentação** — estão perdendo todos os leilões. Nenhum status vai apontar isso; não force uma causa "com cara de status" quando na verdade é disputa de leilão.
+5. **`ENABLED` ≠ elegível.** O estado da campanha é a intenção do vendedor; o `serving_status` (campanha ou anúncio) é o veredito da Amazon — os dois podem divergir. Se `ad_serving_summary.truncated` vier `true`, as contagens são um **piso**, não o total (a lista de anúncios foi cortada). Ao conversar com o vendedor, use linguagem simples — "status de veiculação", "não exibiu anúncios" — nunca o jargão bruto da API.
+
 ## Lances atuais
 
 `list_ad_bids` lista palavras-chave e alvos de produto/categoria com o **lance que a Amazon usa nos leilões agora**. Em conta grande, filtre por `campaign_id` (ou `ad_group_id`); `type` recorta entre `keyword`, `target` ou ambos.
@@ -72,6 +82,20 @@ O campo decisivo é o **`bid_source`**:
 - **`padrão do grupo`** — o item **não tem lance próprio** e está herdando o padrão do grupo de anúncios. Mudar o lance desse item cria um lance próprio e o desliga do padrão do grupo — e mexer no padrão do grupo mudaria **todos** os itens que ainda herdam. Diga qual dos dois o vendedor quer antes de propor um número.
 
 Os ids que vêm aqui (`keyword_id` / `target_id`) são exatamente os que as ferramentas de mudança de lance recebem — leia daqui, nunca invente.
+
+## Alterações na conta (write tools)
+
+Além da leitura, existem tools de **alteração**: pausar/reativar campanha (`pause_campaign`, `resume_campaign`), ajustar orçamento (`update_campaign_budget`), ajustar lances (`update_keyword_bid`, `update_target_bid`) e negativar (`create_negative_keyword`, `create_negative_target`). Os limites exatos de cada uma (faixas de valores, variação máxima por passo, período de espera) estão nas próprias descriptions das tools — não os repita de memória.
+
+1. **Simule primeiro, sempre.** Toda tool de alteração aceita `execute: false` (o padrão): monta o pedido e valida sem mudar nada na Amazon. Mostre ao vendedor o que mudaria e obtenha **confirmação explícita** antes de repetir com `execute: true`.
+2. **Valores absolutos, nunca delta.** As tools recebem o valor final (`bid: 1.20`), não "aumente 10%". Ao ouvir um pedido relativo, calcule sobre o valor atual — o orçamento atual vem em `daily_budget` no `list_ad_campaigns`; o lance atual de keyword/target vem de `list_ad_bids` (ver **Lances atuais**).
+3. **Rejeição é conversa, não erro.** `rejected_hard_limit` → a resposta traz `allowedRange`; proponha um valor dentro da faixa. `rejected_cooldown` → existe um período de espera entre alterações na mesma campanha/keyword (`daysRemaining` diz quanto falta). `rejected_rate_limit` → limite diário de segurança de alterações da conta. Explique o motivo em linguagem simples e **nunca tente contornar por conta própria**. Para explicar as proteções ao vendedor, chame `explain_concept` com o termo `limites de alteração` — não improvise a taxonomia.
+4. **Forçar é decisão do vendedor, nunca sua.** As flags `override_cooldown`/`override_rate_limit` só entram depois de uma rejeição, com o motivo explicado e a confirmação explícita do vendedor.
+5. **Propostas do motor de automação** (`list_ads_proposals` → revisar → `approve_ads_proposal`/`reject_ads_proposal`): proposta com mais de ~24h pode não refletir o estado atual — confira antes de aprovar. Status `unknown` = desfecho não confirmado pelo sistema; investigue (via `auditId`) antes de tratar como feito. Ao rejeitar, registre o motivo em `reason`.
+6. **Rastro.** Toda tentativa de alteração (inclusive simulação e rejeição) gera um `auditId` — cite-o ao reportar o que foi feito.
+7. **Linguagem com o vendedor:** "simulação", "período de espera", "faixa permitida", "limite diário" — nunca o jargão bruto da API (dry-run, cooldown, rate limit).
+
+O glossário de Ajuda também explica `ACoS`, `ROAS`, `negativar`, `status de veiculação`, `proposta de automação` e `simulação` — use-o em vez de definir de memória.
 
 ## O que entregar
 
@@ -90,6 +114,6 @@ Os ids que vêm aqui (`keyword_id` / `target_id`) são exatamente os que as ferr
 - **Não trate ACoS como lucro.** Sem tarifa (e sem custo) não dá para dizer se a campanha ganha dinheiro.
 - **Não conclua "caiu" olhando os últimos dias** — pode ser só atribuição imatura.
 - **Não negative um termo em cima de janela imatura nem de poucos cliques** — e cheque o `keyword_type` antes (colher faz sentido no automático, não numa keyword já exata).
-- Campanha **sem entrega** (`ENABLED` com tudo zerado) não é erro de dado: normalmente é lance ou orçamento insuficiente.
-- **Esta skill é de leitura.** Ela não pausa campanha, não muda lance nem orçamento — quem executa é a skill `acoes-ads`, sempre com simulação e confirmação do vendedor antes.
+- Campanha **sem entrega** (`ENABLED` com tudo zerado) não é erro de dado nem tem causa única presumida — siga a ordem de diagnóstico em **Veiculação zero** (`data_freshness` → `serving_status` da campanha → `serving_status_counts` dos anúncios → competitividade de lance/segmentação).
+- **Alterar exige o fluxo de Alterações na conta**: simulação, confirmação explícita do vendedor e só então execução — nunca execute direto. **Criar campanha** ainda não é possível por aqui; essa, sim, é feita no console da Amazon.
 - **Sem dados no período:** verifique se o Amazon Ads está conectado e se a importação já rodou (a nota da tool indica qual é o caso).
