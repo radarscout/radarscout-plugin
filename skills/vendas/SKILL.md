@@ -1,6 +1,6 @@
 ---
 name: vendas
-description: "Resume o desempenho de vendas de uma conta de seller num período — GMV (faturamento bruto), itens de pedido, ticket médio e lucro líquido MC3 — e destaca os produtos campeões. Use quando o usuário perguntar como foram as vendas, pedir um panorama de faturamento ou desempenho, falar em GMV/ticket médio, ou quiser comparar períodos."
+description: "Resume o desempenho de vendas de uma conta de seller num período — GMV (faturamento bruto), itens de pedido, ticket médio e lucro líquido MC3 — e destaca os produtos campeões. Também abre pedido a pedido, para conferir com o ERP. Use quando o usuário perguntar como foram as vendas, pedir um panorama de faturamento ou desempenho, falar em GMV/ticket médio, quiser comparar períodos, ou pedir a lista de pedidos de um dia."
 ---
 
 # Revisão de vendas
@@ -18,6 +18,13 @@ Entrega um panorama interpretado das vendas de um período: indicadores de topo 
 2. Chame a tool de panorama de vendas (`get_sales_overview`) do `radarscout` com `seller_account_id`, `period_start`, `period_end`. Ela traz GMV, número de itens de pedido, ticket médio e **lucro líquido MC3** (já após CMV, tarifas Amazon e anúncios).
 3. Chame a tool de ranking de produtos (`list_top_products`) com a mesma janela. Padrão: `sort=profit` (lucro líquido). Use `sort=margin` se o usuário falar em margem. Ela sinaliza SKUs com **margem negativa** (prejuízo).
 4. Para comparar períodos, repita os passos 2–3 na janela anterior e mostre as variações (R$ e %).
+5. Quando o vendedor quiser **pedido a pedido** — conferir com o ERP, investigar um pedido específico —, chame `list_orders`. Ela devolve um registro por pedido (SKUs em `items`), com número do pedido, data, status e o valor decomposto.
+
+Três cuidados com `list_orders`, porque ela não bate com os outros números por construção:
+
+- **`items_total` não inclui frete.** Frete, desconto promocional e imposto vêm em campos separados — some o que precisar, não presuma que já está lá.
+- **Sem `status_group`, a lista inclui cancelados**, que o GMV dos outros relatórios não inclui.
+- **`total_orders` conta pedidos; o `orders` do panorama conta itens de pedido**, e vem de outra fonte. Não são comparáveis, e apresentá-los lado a lado como se fossem gera desconfiança no resto do número.
 
 ## O que entregar
 
@@ -38,4 +45,6 @@ Entrega um panorama interpretado das vendas de um período: indicadores de topo 
 - **Sem vendas** (GMV 0 / lista vazia): diga claramente que não há vendas nessa conta e período; ofereça outra conta (o usuário pode ter várias) ou outra janela. A ingestão pode atrasar dados muito recentes.
 - **MC3 agregado negativo:** abra com o alerta de **prejuízo** — vendeu, mas o lucro líquido ficou negativo —, não só com o GMV. Encaminhe à skill `lucro` para achar a etapa que virou o resultado.
 - `list_top_products` pagina por cursor; para um panorama, a primeira página (até 50) basta. Não varra todas as páginas sem o usuário pedir.
+- `list_orders` também pagina por cursor. Para conferência de um dia, uma página costuma bastar; varrer o mês inteiro sem o vendedor pedir é gasto à toa.
+- **Nunca prometa dado do comprador.** A ferramenta de pedidos não devolve CPF nem endereço, de propósito.
 - Se o lucro vier estranho, pode faltar CMV cadastrado — encaminhe para a skill `lucro` (que reporta a cobertura de CMV).

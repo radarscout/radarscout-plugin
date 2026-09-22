@@ -1,6 +1,6 @@
 ---
 name: acoes-ads
-description: "Executa mudanças em Amazon Ads pelo Radar — pausar ou reativar campanha, ajustar orçamento diário, mudar lance de palavra-chave ou de alvo, negativar termo ou alvo — e revisa a fila de propostas da automação (aprovar ou recusar). Use quando o usuário pedir para pausar/ligar campanha, subir ou baixar lance ou orçamento, negativar um termo que gasta sem vender, ou perguntar o que o Radar está sugerindo nos anúncios."
+description: "Executa mudanças em Amazon Ads pelo Radar — pausar ou reativar campanha, palavra-chave ou alvo; ajustar orçamento e lances (inclusive o lance padrão do grupo); negativar termo ou alvo; incluir palavras, alvos e produtos em grupo existente; criar grupo, campanha e portfólio; arquivar campanha — e revisa a fila de propostas da automação (aprovar ou recusar). Use quando o usuário pedir para pausar/ligar algo, subir ou baixar lance ou orçamento, negativar um termo que gasta sem vender, montar ou ampliar uma campanha, organizar campanhas em portfólios, ou perguntar o que o Radar está sugerindo nos anúncios."
 ---
 
 # Ações em Amazon Ads
@@ -31,6 +31,22 @@ Um "pode subir o lance" solto no meio da conversa **não é confirmação** de u
 | Mudar lance de alvo | `update_target_bid` | `targetId`, `bid` |
 | Bloquear uma busca | `create_negative_keyword` | `campaignId` (sempre), `keywordText`, `matchType`; `adGroupId` para valer só no grupo |
 | Bloquear um produto/categoria | `create_negative_target` | `campaignId` (sempre), `expression`; `adGroupId` para valer só no grupo |
+| Desligar (ou religar) uma palavra-chave | `update_keyword_state` | `keywordId`, `state` |
+| Desligar (ou religar) um alvo | `update_target_state` | `targetId`, `state` |
+| Mudar o lance padrão do grupo | `update_ad_group_default_bid` | `adGroupId`, `defaultBid` |
+| Incluir palavras num grupo | `add_keywords` | `campaignId`, `adGroupId`, lista com texto e tipo de correspondência |
+| Incluir alvos num grupo | `add_targets` | `campaignId`, `adGroupId`, lista de expressões |
+| Anunciar produtos num grupo | `add_product_ads` | `campaignId`, `adGroupId`, ASINs ou SKUs |
+| Criar grupo numa campanha | `create_ad_group` | `campaignId`, `name`, `defaultBid`, `state` |
+| Criar campanha inteira | `create_campaign_structure` | a árvore: campanha, grupos, produtos e palavras |
+| Criar portfólio | `create_portfolio` | `name` |
+| Encerrar de vez uma campanha | `archive_campaign` | `campaignId` + `confirm_archive:true` |
+
+**Desligar não é negativar.** Pausar a palavra-chave para o gasto **dela**; negativar bloqueia aquela busca no grupo ou na campanha inteira, inclusive o que outras palavras capturariam. Quando o vendedor disser "tira essa palavra", pergunte qual dos dois — e prefira pausar, que é reversível e não afeta as vizinhas.
+
+**Arquivar não tem volta na Amazon.** A campanha sai da operação para sempre e não pode ser reativada; o histórico continua nos relatórios. Por isso ela exige `confirm_archive:true` **além** do `execute:true`, e o vendedor precisa dizer que entende que é definitivo. Para tirar do ar de forma reversível, use `pause_campaign`.
+
+**O lance padrão do grupo move vários de uma vez.** Ele vale para toda palavra e todo alvo sem lance próprio — os que aparecem como `padrão do grupo` em `list_ad_bids`. Diga quantos itens serão afetados antes de propor o número.
 
 Negativação **sem** `adGroupId` vale para a campanha inteira — diga isso ao vendedor antes de executar; é o erro mais caro de reverter.
 
@@ -40,7 +56,8 @@ O Radar segura mudanças bruscas. Vale explicar em português, não citar o nome
 
 - **Mudança gradual:** orçamento até **30%** por vez, lance até **50%** por vez.
 - **Faixas de segurança:** lance de **R$ 0,02 a R$ 500**; orçamento de **R$ 1 a R$ 100.000** — barram erro de digitação.
-- **Tempo de observação:** depois de uma mudança, aquela campanha, palavra-chave ou alvo espera **7 dias** antes de aceitar outra (**14 dias** para negativações) — é o tempo de as vendas por atribuição amadurecerem e dar para ver o efeito. Pausar e religar contam como a mesma mudança.
+- **Tempo de observação:** depois de uma mudança, aquela campanha, palavra-chave, alvo ou grupo espera **7 dias** antes de aceitar outra (**14 dias** para negativações) — é o tempo de as vendas por atribuição amadurecerem e dar para ver o efeito. Pausar e religar contam como a mesma mudança, inclusive na palavra-chave e no alvo.
+- **Incluir não espera.** Acrescentar palavras, alvos, produtos, grupo ou portfólio não substitui nada, então não há período de observação — só o teto diário. O que existe é a recusa por **duplicata**: item que já está no grupo (ou nome de portfólio/grupo já usado) volta listado, para você tirar da lista e repetir a chamada.
 - **Teto diário da conta:** pelo menos 100 alterações/dia no total e até 50 por campanha.
 
 Quando uma chamada volta recusada, o motivo vem junto:
@@ -52,6 +69,8 @@ Quando uma chamada volta recusada, o motivo vem junto:
 | `rejected_cooldown` | Essa campanha/lance mudou há pouco; faltam `daysRemaining` dias de observação. |
 | `rejected_hard_limit` | O valor está fora da faixa permitida ou o salto é grande demais — mostre a `allowedRange`. |
 | `rejected_rate_limit` | Bateu o teto de alterações do dia. |
+| `ok` com `partial: true` | Parte da lista entrou e parte não: `created` traz o que foi criado e `failed` o motivo de cada recusado, com o texto do item. O que entrou é real na conta — não repita a chamada inteira. |
+| `confirmation_required` | Só em `archive_campaign`: falta o `confirm_archive:true`. Confirme com o vendedor que é definitivo antes de repetir. |
 | `api_error` | A Amazon recusou — repasse a mensagem, não repita a chamada às cegas. |
 | `not_connected` | A conta de anúncios não está conectada ao Radar. |
 | `not_enabled` | A execução de mudanças não está liberada para essa conta. |
@@ -89,5 +108,7 @@ Duas ressalvas:
 - **Nunca invente ids.** `campaignId`, `keywordId`, `targetId` vêm das ferramentas de leitura.
 - **Nunca force** uma proteção sem recusa prévia por aquele motivo e sem o vendedor pedir.
 - **Não negative um termo** em cima de poucos cliques ou de janela recente — veja `keyword_type` e volume na skill `ads`.
+- **Não arquive** quando pausar resolve. Arquivar é definitivo; na dúvida, pause.
+- **Não proponha lance sem ver o resultado dele.** `list_ad_bids` com período traz gasto, vendas e ACoS ao lado do lance atual — é de lá que sai o número, não de estimativa.
 - **Não trate proposta aprovada como concluída** sem reler a fila; `unknown` pede investigação.
 - Não decida a estratégia pelo vendedor: quanto cortar, quando pausar e o ACoS-alvo são dele. Sem estratégia declarada, exponha o trade-off e pergunte.
