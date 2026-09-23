@@ -40,7 +40,7 @@ Amazon Ads, entitlement `analytics`:
 Contrato invariável dessas tools:
 
 1. **Simulação por padrão.** Sem `execute:true` nada é enviado à Amazon — a resposta `dry_run` traz o que seria enviado. Só mande `execute:true` após confirmação explícita do vendedor **daquele valor**.
-2. **Ler antes de escrever.** Ids e valores atuais vêm de `list_ad_campaigns` / `list_ad_bids` / `list_search_terms`. Nunca inventar id.
+2. **Ler antes de escrever.** Ids e valores atuais vêm de `list_ad_campaigns` / `list_ad_bids` / `list_search_terms`. Nunca inventar id. Id da Amazon é só número — o nome da campanha não é id, e a tool recusa. Produto anunciado é por SKU (de `list_seller_offers`); ASIN só vale para conta vendor.
 3. **Proteções do motor:** mudança gradual (orçamento até 30%, lance até 50% por vez), faixas de segurança (lance R$ 0,02–500; orçamento R$ 1–100.000), período de observação de 7 dias por campanha/lance (14 dias em negativações) e teto diário de alterações. Recusas voltam em `rejected_hard_limit` / `rejected_rate_limit` / `rejected_cooldown` com o motivo e a faixa permitida.
 4. **`override_cooldown` / `override_rate_limit`** só após uma recusa por aquele motivo **e** com confirmação explícita do vendedor.
 5. **`approve_ads_proposal` é assíncrona** — o resultado final se lê em `list_ads_proposals` (`executed` / `failed` / `unknown`; `unknown` exige investigar o `auditId`).
