@@ -6,7 +6,7 @@ Converse com seus dados do Radar Scout — **vendas, lucro (MC1–MC3), repasses
 
 ## O que vem aqui
 
-- **MCP `radarscout`** — servidor remoto (HTTP + OAuth) com 31 tools: identidade e conexão da conta, catálogo, ofertas do seller, vendas, profit waterfall, repasses, repricer, Amazon Ads (performance, termos de busca, lances), calculadora/estimativas e glossário — mais as **ações de Ads** (pausar, orçamento, lances, negativação e a fila de propostas da automação).
+- **MCP `radarscout`** — servidor remoto (HTTP + OAuth) com 43 tools: identidade e conexão da conta, catálogo, ofertas do seller, vendas, profit waterfall, repasses, repricer, Amazon Ads (performance da conta, por campanha, por portfólio, dia a dia, termos de busca e lances com o resultado de cada um), calculadora/estimativas e glossário — mais as **ações de Ads** (pausar campanha, palavra-chave e alvo; orçamento e lances, inclusive o padrão do grupo; negativação; incluir palavras, alvos e produtos; criar grupo, campanha e portfólio; arquivar campanha; e a fila de propostas da automação).
 - **Skills** — 12 fluxos do dia a dia do vendedor, que orquestram os tools e entregam output interpretado em pt-BR:
 
 | Skill | Para quê |
@@ -26,7 +26,7 @@ Converse com seus dados do Radar Scout — **vendas, lucro (MC1–MC3), repasses
 
 ### Mudanças em Amazon Ads são sempre confirmadas
 
-As tools de ação rodam **em simulação por padrão**: o agente mostra o de-para (valor de hoje → valor proposto) e nada é enviado à Amazon sem a sua confirmação explícita. Além disso, o Radar aplica mudança gradual (orçamento até 30%, lance até 50% por vez), faixas de segurança de valor, um período de observação entre alterações e um teto diário — as proteções só são ignoradas se você pedir.
+As tools de ação rodam **em simulação por padrão**: o agente mostra o de-para (valor de hoje → valor proposto) e nada é enviado à Amazon sem a sua confirmação explícita. Além disso, o Radar aplica mudança gradual (orçamento até 30%, lance até 50% por vez), faixas de segurança de valor, um período de observação entre alterações e um teto diário — as proteções só são ignoradas se você pedir. Incluir palavras, alvos ou produtos não tem período de observação, porque não substitui nada; arquivar campanha pede uma confirmação à parte, porque não tem volta na Amazon.
 
 ## Instalação
 
