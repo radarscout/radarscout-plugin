@@ -2,7 +2,7 @@
 
 Converse com seus dados do Radar Scout — **vendas, pedidos, lucro (MC1–MC3), repasses, repricer e Amazon Ads** da sua operação Amazon — direto no seu agente de código. E, em Amazon Ads, **gerencie as campanhas** pelo próprio chat — de ajustes de lance a campanhas novas —, com simulação e confirmação antes de qualquer alteração.
 
-> **Status:** v0.3.0 — MCP remoto com 52 ferramentas (leitura + ações de Ads e do Repricer) e 13 skills do vendedor.
+> **Status:** v0.3.0 — MCP remoto com 53 ferramentas (leitura + ações de Ads, do Repricer e de ofertas) e 13 skills do vendedor.
 
 ## O que vem aqui
 

@@ -10,7 +10,7 @@ Radar Scout é uma ferramenta para vendedores Amazon acompanharem **vendas, lucr
 
 - Servidor MCP **remoto**: Streamable HTTP + OAuth 2.1 em `https://mcp.radarscout.com.br/mcp`.
 - **Seller-scoped** — cada usuário enxerga apenas os próprios dados. Auth via OAuth (no Claude Code: 401 → `/mcp`).
-- **Leitura + ação:** a maioria das tools é read-only; as tools de Amazon Ads e do Repricer **escrevem na conta do vendedor** (ver *Tools de ação*). O acesso a cada domínio depende do **entitlement** do plano (`radar` / `analytics` / `repricer` / `performance`) — `whoami` devolve o resumo.
+- **Leitura + ação:** a maioria das tools é read-only; as tools de Amazon Ads, do Repricer e de criação de oferta **escrevem na conta do vendedor** (ver *Tools de ação*). O acesso a cada domínio depende do **entitlement** do plano (`radar` / `analytics` / `repricer` / `performance`) — `whoami` devolve o resumo.
 - **Modo preview:** as tools de **leitura** de Analytics e Performance respondem também em preview (sem plano ativo do app), com um aviso separado do dado: é o histórico que já está na plataforma, não atualizado. Escrita em Ads sempre exige plano ativo de Performance; Radar e Repricer não têm preview. Período de teste conta como ativo.
 - Nome lógico do server: `radarscout`. O nome qualificado da tool **muda por harness**; refira as tools pela **capacidade** + server lógico `radarscout`, nunca cole o namespace completo (`mcp__plugin_...`).
 
@@ -43,6 +43,10 @@ Repricer, entitlement `repricer` (plano ativo; só contas Amazon na v1):
 - **Preço:** `update_price` — mesmo caminho do Publicar do painel. Só com o Repricer ligado; recusa sem mínimo/máximo e abaixo do piso de margem; com o Repricer ligado a automação pode reajustar depois.
 
 Seguem o contrato abaixo (simulação por padrão; `execute:true` só após confirmação daquele valor) e toda resposta traz `undo` com a chamada que volta ao valor anterior.
+
+Ofertas, entitlement `radar` (plano ativo; só contas Amazon):
+
+- **Criar oferta em produto existente:** `create_offer` — SKU novo num ASIN do catálogo, com preço, FBA ou envio próprio. A simulação confere SKU livre, se a conta pode vender o produto (ou precisa de aprovação), o preço contra a margem (custo + tarifas da Amazon) e a validação da própria Amazon, sem criar nada. Sem custo, criar exige `confirm_without_cost:true`. No FBA a Amazon pede duas declarações do vendedor (baterias; produtos perigosos) — **pergunte, nunca suponha**. A oferta aparece no Radar na sincronização diária e entra no Repricer desligada. Não há `undo` automático: desfazer é encerrar a oferta no Seller Central.
 
 Amazon Ads, entitlement `performance` (plano ativo — preview não basta):
 
