@@ -46,7 +46,7 @@ Seguem o contrato abaixo (simulação por padrão; `execute:true` só após conf
 
 Ofertas, entitlement `radar` (plano ativo; só contas Amazon):
 
-- **Criar oferta em produto existente:** `create_offer` — SKU novo num ASIN do catálogo, com preço, FBA ou envio próprio. A simulação confere SKU livre, se a conta pode vender o produto (ou precisa de aprovação), o preço contra a margem (custo + tarifas da Amazon) e a validação da própria Amazon, sem criar nada. Sem custo, criar exige `confirm_without_cost:true`. No FBA a Amazon pede duas declarações do vendedor (baterias; produtos perigosos) — **pergunte, nunca suponha**. A oferta aparece no Radar na sincronização diária e entra no Repricer desligada. Não há `undo` automático: desfazer é encerrar a oferta no Seller Central.
+- **Criar oferta em produto existente:** `create_offer` — SKU novo num ASIN do catálogo, com preço, FBA ou envio próprio. No envio próprio a oferta nasce **sempre com estoque 0**: a quantidade vem do sistema de gestão (ERP) do vendedor — o Radar não escreve estoque. A simulação confere SKU livre, se a conta pode vender o produto (ou precisa de aprovação), o preço contra a margem (custo + tarifas da Amazon) e a validação da própria Amazon, sem criar nada. Sem custo, criar exige `confirm_without_cost:true`. No FBA a Amazon pede duas declarações do vendedor (baterias; produtos perigosos) — **pergunte, nunca suponha**. A oferta aparece no Radar na sincronização diária e entra no Repricer desligada. Não há `undo` automático: desfazer é encerrar a oferta no Seller Central.
 
 Amazon Ads, entitlement `performance` (plano ativo — preview não basta):
 
