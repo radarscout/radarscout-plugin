@@ -2,7 +2,7 @@
 
 Converse com seus dados do Radar Scout — **vendas, pedidos, lucro (MC1–MC3), repasses, repricer e Amazon Ads** da sua operação Amazon — direto no seu agente de código. E, em Amazon Ads, **gerencie as campanhas** pelo próprio chat — de ajustes de lance a campanhas novas —, com simulação e confirmação antes de qualquer alteração.
 
-> **Status:** v0.3.0 — MCP remoto com 43 ferramentas (leitura + ações de Ads) e 12 skills do vendedor.
+> **Status:** v0.3.0 — MCP remoto com 52 ferramentas (leitura + ações de Ads e do Repricer) e 13 skills do vendedor.
 
 ## O que vem aqui
 
@@ -98,7 +98,7 @@ Connectors adicionados no claude.ai aparecem automaticamente no Claude Code.
 
 ### Skills em qualquer agente — skills.sh (`npx skills`)
 
-As 12 skills são instaláveis em 70+ agentes (Claude Code, Cursor, Copilot, Windsurf, Gemini, Codex…) via [skills.sh](https://www.skills.sh):
+As 13 skills são instaláveis em 70+ agentes (Claude Code, Cursor, Copilot, Windsurf, Gemini, Codex…) via [skills.sh](https://www.skills.sh):
 
 ```bash
 # todas as skills do repo

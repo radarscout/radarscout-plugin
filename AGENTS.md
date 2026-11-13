@@ -10,7 +10,7 @@ Radar Scout é uma ferramenta para vendedores Amazon acompanharem **vendas, lucr
 
 - Servidor MCP **remoto**: Streamable HTTP + OAuth 2.1 em `https://mcp.radarscout.com.br/mcp`.
 - **Seller-scoped** — cada usuário enxerga apenas os próprios dados. Auth via OAuth (no Claude Code: 401 → `/mcp`).
-- **Leitura + ação:** a maioria das tools é read-only; as tools de Amazon Ads **escrevem na conta do vendedor** (ver *Tools de ação*). O acesso a cada domínio depende do **entitlement** do plano (`radar` / `analytics` / `repricer` / `performance`) — `whoami` devolve o resumo.
+- **Leitura + ação:** a maioria das tools é read-only; as tools de Amazon Ads e do Repricer **escrevem na conta do vendedor** (ver *Tools de ação*). O acesso a cada domínio depende do **entitlement** do plano (`radar` / `analytics` / `repricer` / `performance`) — `whoami` devolve o resumo.
 - **Modo preview:** as tools de **leitura** de Analytics e Performance respondem também em preview (sem plano ativo do app), com um aviso separado do dado: é o histórico que já está na plataforma, não atualizado. Escrita em Ads sempre exige plano ativo de Performance; Radar e Repricer não têm preview. Período de teste conta como ativo.
 - Nome lógico do server: `radarscout`. O nome qualificado da tool **muda por harness**; refira as tools pela **capacidade** + server lógico `radarscout`, nunca cole o namespace completo (`mcp__plugin_...`).
 
@@ -19,7 +19,11 @@ Radar Scout é uma ferramenta para vendedores Amazon acompanharem **vendas, lucr
 - **Identidade:** `whoami` — contas de seller do usuário (`seller_account_id`) + entitlements.
 - **Conexão:** `connect_amazon_sp_api` — gera o link de consentimento da Amazon para vincular uma nova `SellerAccount` (não conclui a conexão sozinho).
 - **Produtos (catálogo / oportunidades):** `search_products`, `get_product_details`, `list_tracked_products`.
-- **Ofertas do seller (SellerListing):** `list_seller_offers`, `get_seller_offer` — estoque, FBA/FBM/DBA, Buy Box, reposição (velocidade, dias de cobertura, status). Nunca conflatar com catálogo.
+- **Ofertas do seller (SellerListing):** `list_seller_offers`, `get_seller_offer` — estoque, FBA/FBM/DBA, Buy Box, reposição (velocidade, dias de cobertura, status, compra sugerida já descontado o que está a caminho do FBA). Nunca conflatar com catálogo.
+- **Estoque e reposição** (entitlement `analytics`): `get_inventory_health` (zerados, críticos, em atenção, parados, totais disponível e a caminho), `build_replenishment_plan` (lista de compra do mais urgente ao menos, com total de unidades).
+- **Tráfego por item** (entitlement `analytics`, só Amazon): `get_sales_traffic_by_item` — sessões, visualizações, conversão e Buy Box por ASIN. O histórico por item começa quando a leitura entrou no ar (`data_since`).
+- **Saúde da conta** (entitlement `radar`, só Amazon): `get_account_health` — situação da conta, nota de saúde, pedidos com defeito, cancelamento pelo vendedor (meta 2,5%), atrasos, rastreio, violações de política. Responde da última leitura salva com menos de 1 dia; se não, lê a Amazon na hora (até ~40 s); `stale` = leitura antiga enquanto a Amazon gera a nova.
+- **Diagnóstico de anúncio** (entitlement `radar`, só Amazon, ao vivo): `check_listing` (um anúncio: pode ser comprado e por quê não, aparece na busca, `problems` × `suggestions`, logística, estoque, conteúdo da página) e `list_listing_problems` (anúncios da conta com aviso). É a visão da Amazon — não confundir com as ofertas (números do Radar).
 - **Vendas:** `get_sales_overview`, `list_top_products`.
 - **Pedidos:** `list_orders` — pedidos Amazon pedido a pedido (ou item a item com `granularity:"item"`), com valor decomposto (itens, frete, desconto, imposto) para conferir contra ERP. `items_total` **não** inclui frete; `status_group` padrão `all` **inclui cancelados**; `total_orders` conta pedidos e não é comparável ao `orders` de `get_sales_overview` (itens de pedido). Sem dado pessoal do comprador.
 - **Lucro:** `get_profit_waterfall`.
@@ -31,6 +35,14 @@ Radar Scout é uma ferramenta para vendedores Amazon acompanharem **vendas, lucr
 - **Conceitos:** `explain_concept` — glossário Radar/Amazon (PMI, MC1–MC3, repasse, floor price, Buy Box %, safe mode, limites de alteração).
 
 ### Tools de ação (escrevem na conta do vendedor)
+
+Repricer, entitlement `repricer` (plano ativo; só contas Amazon na v1):
+
+- **Custo e margem:** `update_product_cost_and_margin` — grava custo e/ou margem mínima, recalcula o preço mínimo que protege a margem e envia mínimo/máximo à Amazon. Custo vindo do ERP é recusado.
+- **Regra:** `set_repricer_rule` — liga/desliga o Repricer no anúncio e escolhe a automação (`available_automations`); `armed`/`missing` dizem se o Repricer vai mexer no preço.
+- **Preço:** `update_price` — mesmo caminho do Publicar do painel. Só com o Repricer ligado; recusa sem mínimo/máximo e abaixo do piso de margem; com o Repricer ligado a automação pode reajustar depois.
+
+Seguem o contrato abaixo (simulação por padrão; `execute:true` só após confirmação daquele valor) e toda resposta traz `undo` com a chamada que volta ao valor anterior.
 
 Amazon Ads, entitlement `performance` (plano ativo — preview não basta):
 
@@ -55,7 +67,7 @@ Contrato invariável dessas tools:
 
 ## Skills
 
-12 skills do vendedor em `skills/`, cada uma orquestrando os tools `radarscout` e entregando output interpretado em pt-BR:
+13 skills do vendedor em `skills/`, cada uma orquestrando os tools `radarscout` e entregando output interpretado em pt-BR:
 
 - `inicio` — conecta (inclusive gerando o link da Amazon) e resolve o `seller_account_id`.
 - `vendas` — panorama de vendas (GMV, ticket, MC3, campeões) e conferência pedido a pedido.
@@ -66,6 +78,7 @@ Contrato invariável dessas tools:
 - `repasses` — próximo repasse e conciliação com vendas.
 - `produtos` — busca de catálogo e watchlist de Buy Box.
 - `ofertas` — SKUs do seller: estoque, FBA/FBM, Buy Box e reposição.
+- `anuncios` — diagnóstico e qualidade do anúncio pela visão da Amazon: pode ser comprado, aparece na busca, problemas × sugestões, conteúdo da página.
 - `calculadora` — simulação de tarifas/lucro/ROI e estimativa de vendas por BSR.
 - `relatorio` — briefing diário/semanal narrativo.
 - `glossario` — explica conceitos (sem acessar dados do seller).
